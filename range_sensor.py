@@ -57,19 +57,22 @@ water = CISTERNAREA*height/1000 # in Liters
 filling = height/WATERMAXHEIGHT*100 # in %
 
 #write datum into homematic
-URL = 'http://homematic.minixint.at/config/xmlapi/statechange.cgi'
+if 0 <= filling < 110:
+    URL = 'http://homematic.minixint.at/config/xmlapi/statechange.cgi'
 
-try:
-    result = requests.get(URL + '?ise_id=%d,%d,%d' % (HEIGHTISEID, WATERISEID, FILLINGISEID) + \
-                                '&new_value=%.1f,%d,%.2f' % (height, water, filling))
-    logging.info(result.url)
-except requests.exceptions.RequestException as err:
-    logging.error("Error occured, trying again later: ", exc_info=err)
-    GPIO.cleanup()
+    try:
+        result = requests.get(URL + '?ise_id=%d,%d,%d' % (HEIGHTISEID, WATERISEID, FILLINGISEID) + \
+                                    '&new_value=%.1f,%d,%.2f' % (height, water, filling))
+        logging.info(result.url)
+    except requests.exceptions.RequestException as err:
+        logging.error("Error occured, trying again later: ", exc_info=err)
+        GPIO.cleanup()
 
-logging.info("Distance: %6.2f cm", distance)
-logging.info("Height: %6.2f cm", height)
-logging.info("Stored Water: %d Liters", water)
-logging.info("Fill Height: %.2f %%", filling)
+    logging.info("Distance: %6.2f cm", distance)
+    logging.info("Height: %6.2f cm", height)
+    logging.info("Stored Water: %d Liters", water)
+    logging.info("Fill Height: %.2f %%", filling)
+else:
+    logging.error("Measured height out of bounds (0%%<height<110%%)")
 
 GPIO.cleanup()
