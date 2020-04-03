@@ -141,3 +141,34 @@ sudo sshd restart
 sudo service ssh restart
 git push
 exit
+sudo vcgencmd measure_temp
+cd /sys/class/thermal
+ls
+cd thermal_zone0
+ls
+cat temp
+sudo apt install python3-gpiozero
+cd
+ls
+nano range_sensor.py 
+./range_sensor.py 
+which python
+python -v
+sudo apt install python-gpiozero
+sudo apt remove python3-gpiozero
+./range_sensor.py 
+cat /var/log/rangesensor.log 
+./range_sensor.py 
+python
+./range_sensor.py 
+tail -f /var/log/rangesensor.log 
+git commit -m "Implemented CPU Temperature measurement"
+ls
+ls -al
+git commit -a -m "Implemented CPU Temperature measurement"
+git push
+exit
+pwd
+cat /var/log/rangesensor.log 
+tail -f /var/log/rangesensor.log 
+exit
