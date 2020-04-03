@@ -11,14 +11,18 @@ import time
 import logging
 import requests
 import RPi.GPIO as GPIO #pylint: disable=E0401
+from gpiozero import CPUTemperature #pylint: disable=E0401
 
 GPIO.setmode(GPIO.BCM)
 
 TRIG = 10
 ECHO = 4
 HEIGHTISEID = 25608
+CPUTEMPISEID = 25611
 WATERISEID = 25609
 FILLINGISEID = 25610
+
+degree_sign = u'\N{DEGREE SIGN}'
 
 CISTERNAREA = 109270 # Base area of cistern in cm^2
 CISTERNHEIGHT = 239 #estimated distance between sensor and cistern floor in cm needs to be measured
@@ -55,10 +59,10 @@ distance = round(distance, 2)
 height = CISTERNHEIGHT - distance # in cm
 water = CISTERNAREA*height/1000 # in Liters
 filling = height/WATERMAXHEIGHT*100 # in %
+URL = 'http://homematic.minixint.at/config/xmlapi/statechange.cgi'
 
 #write datum into homematic
 if 0 <= filling < 110:
-    URL = 'http://homematic.minixint.at/config/xmlapi/statechange.cgi'
 
     try:
         result = requests.get(URL + '?ise_id=%d,%d,%d' % (HEIGHTISEID, WATERISEID, FILLINGISEID) + \
@@ -74,5 +78,16 @@ if 0 <= filling < 110:
     logging.info("Fill Height: %.2f %%", filling)
 else:
     logging.error("Measured height out of bounds (0%%<height<110%%)")
+
+cpu = CPUTemperature()
+
+logging.info("CPU Temp: %.2f degC", cpu.temperature)
+
+try:
+    result = requests.get(URL + '?ise_id=%d' % CPUTEMPISEID + '&new_value=%.2f' % cpu.temperature)
+    logging.info(result.url)
+except requests.exceptions.RequestException as err:
+    logging.error("Error occured, trying again later: ", exc_info=err)
+    GPIO.cleanup()
 
 GPIO.cleanup()

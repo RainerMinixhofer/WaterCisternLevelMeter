@@ -70,3 +70,74 @@ ssh admin@10.0.1.37
 ssh root@10.0.1.37
 tail -f /var/log/rangesensor.log 
 exit
+ls
+ls -al
+sudo apt-get update
+sudo apt-get install samba samba-common smbclient
+sudo service smbd status
+sudo service nmbd status
+sudo mv /etc/samba/smb.conf /etc/samba/smb.conf_alt
+sudo nano /etc/samba/smb.conf
+testparm
+ls
+pwd
+sudo service smbd restart
+sudo service nmbd restart
+sudo service smbd status
+sudo service nmbd status
+sudo nano /etc/samba/smb.conf
+sudo service smbd status
+sudo service smbd restart
+sudo service nmbd restart
+sudo service smbd status
+sudo service nmbd status
+sudo smbpasswd -a rainer
+pwd
+ls
+git commit -m "Cleaned up code with pylint"
+ls
+git add .
+git commit -m "Cleaned up code with pylint"
+git push
+exit
+ps aux
+ls
+more range_sensor.py 
+ls
+sudo nano range_sensor.py 
+git commit -m "Added simple outlier detection for measurement"
+ls
+ls -ltr
+git add range_sensor.py 
+git commit -m "Added simple outlier detection for measurement"
+git push
+git remote -v
+cd .git/
+ls
+more config 
+ls ~/.ssh
+ssh minixhofer@git.code.sf.net/p/wasserbehaelter-fuellstand
+ssh ssh://minixhofer@git.code.sf.net/p/wasserbehaelter-fuellstand
+ssh ssh://minixhofer@git.code.sf.net
+ssh ssh://minixhofer@git.code.sf.net/p/
+ssh minixhofer@git.code.sf.net
+ssh -vvv minixhofer@git.code.sf.net
+cd
+ls .ssh
+ls -al .ssh
+ssh-keygen -t rsa
+scp ~/.ssh/id_rsa.pub minixhofer@git.code.sf.net/p/wasserbehaelter-fuellstand/.ssh/authorized_keys/id_rsa.pub
+cd .ssh/
+ls
+more id_rsa.pub
+git push
+ssh-keygen -t ed25519 -C "minixhofer@shell.sf.net"
+ls
+rm id_rsa
+rm id_rsa.pub 
+cat id_ed25519.pub 
+git push
+sudo sshd restart
+sudo service ssh restart
+git push
+exit
