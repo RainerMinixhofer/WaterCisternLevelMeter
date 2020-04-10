@@ -172,3 +172,167 @@ pwd
 cat /var/log/rangesensor.log 
 tail -f /var/log/rangesensor.log 
 exit
+tail -f /var/log/rangesensor.log 
+timedatectl
+tail -f /var/log/rangesensor.log 
+timedatectl
+tail -f /var/log/rangesensor.log 
+ps aux | grep -i python
+tail -f /var/log/rangesensor.log 
+./range_sensor.py 
+tail -f /var/log/rangesensor.log 
+./range_sensor.py 
+tail -f /var/log/rangesensor.log 
+./range_sensor.py 
+tail -f /var/log/rangesensor.log 
+./range_sensor.py 
+tail -f /var/log/rangesensor.log 
+git -a -m "Implemented flank detection interrupt for time interval measurement and added temperature dependency into the calculation of the sound speed (currently defaults to 15 degC)"
+git commit -a -m "Implemented flank detection interrupt for time interval measurement and added temperature dependency into the calculation of the sound speed (currently defaults to 15 degC)"
+git push
+tail -f /var/log/rangesensor.log 
+cd /sys/bus/w1/devices
+cd /sys/bus/
+ls
+exit
+ls
+more range_sensor.py 
+exit
+sudo -s
+./range_sensor.py 
+tail -f /var/log/rangesensor.log 
+ls
+apt-get install python3-matplotlib
+sudo -s
+pip install jupyter
+which ipython
+ipython --version
+ls /usr/bin/ipython 
+pip install -U jupyter
+apt-get -y install ipython ipython-notebook
+sudo apt-get -y install ipython ipython-notebook
+sudo apt-get -y install ipython
+sudo -H pip install jupyter
+pip install setuptools --upgrade
+sudo -H pip install setuptools --upgrade
+sudo -H pip install jupyter
+which ipython
+ipython --version
+ipython
+sudo pip3 install --upgrade pip
+sudo pip3 install jupyter
+sudo -H pip3 install --upgrade pip jupyter ipython
+pip3 install --upgrade pip jupyter ipython --no-cache-dir
+ipython --version
+pip3 install jupyter ipython==5.1.0
+sudo -H pip3 install jupyter ipython==5.1.0
+sudo -H pip3 install jupyter ipython==5.1.0 prpmpt-toolkit==2.0.0
+sudo -H pip3 install jupyter ipython==5.1.0 prompt-toolkit==2.0.0
+sudo -H pip3 install jupyter ipython==5.1.0 prompt-toolkit==2.0.10
+sudo -H pip3 install jupyter ipython==6.0.0
+sudo -H pip3 install jupyter
+jupyter notebook --generate-config
+cd .jupyter/
+ls
+nano jupyter_notebook_config.py 
+jupyter notebook
+ls
+nano jupyter_notebook_config.py 
+jupyter notebook
+cd ..
+cd .jupyter/
+nano jupyter_notebook_config.py 
+cd ..
+jupyter notebook
+sudo nano /etc/rc.local
+sudo shutdown -r now
+exit
+sudo -H pip3 install jupyter_contrib_nbextensions
+ps aux | grep -i jupyter
+kill -9 564
+sudo kill -9 564
+ps aux | grep -i jupyter
+sudo kill -9 585
+ps aux | grep -i jupyter
+sudo kill -9 586
+/usr/bin/python3 /usr/local/bin/jupyter-notebook --log-level=CRITICAL --no-browser --notebook-dir=/home/rainer
+bg
+exit
+sudo -H pip3 install jupyter_contrib_nbextensions_configurator
+sudo -H pip3 install jupyter_nbextensions_configurator
+jupyter nbextensions_configurator enable --user
+ps aux | grep -i jupyter
+sudo kill -9 23082
+/usr/bin/python3 /usr/local/bin/jupyter-notebook --log-level=CRITICAL --no-browser --notebook-dir=/home/rainer
+bg
+sudo shutdown -r now
+sudo -H pip3 install jupyter_contrib_nbextensions
+jupyter --paths
+ls
+ls -al
+ls .jupyter/
+cd .jupyter/
+cd nbconfig/
+ls
+cd ..
+jupyter --paths
+ls .local/
+ls .local/share/
+ls .local/share/jupyter/
+ls /usr/local/share/jupyter/
+ls /usr/local/share/jupyter/nbextensions/
+ls /usr/local/share/jupyter/nbextensions/jupyter-js-widgets/
+pip install jupyter_contrib_nbextensions
+jupyter contrib nbextension install --user
+ps aux | grep -i jupyter
+kill -9 566
+sudo kill -9 566
+sudo kill -9 607
+sudo kill -9 614
+sudo kill -9 876
+ps aux | grep -i jupyter
+sudo shutdown -r now
+exit
+cat /var/log/rangesensor.log 
+ls
+df -k
+pwd
+./range_sensor.py 
+ls -ltr
+cat range_sensor.
+cat range_sensor.dat 
+./range_sensor.py 
+cat range_sensor.dat 
+rm range_sensor.
+rm range_sensor.dat 
+./range_sensor.py 
+cat range_sensor.dat 
+sudo -H pip3 install plotly
+sudo -H pip3 install pandas numpy
+sudo -H pip3 -U numpy
+sudo -H pip3 install numpy upgrade
+sudo -H pip3 install numpy==1.13.3
+sudo -H pip3 list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
+sudo -H pip3 list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip3 install -U
+pip freeze
+sudo -H pip3 freeze > requirements.txt && pip3 install --upgrade -r requirements.txt && rm requirements.txt
+sudo -H pip3 freeze > requirements.txt && sudo -H pip3 install --upgrade -r requirements.txt && rm requirements.txt
+sudo apt-get install python3-pandas
+sudo -H pip3 remove pandas
+sudo -H pip3 uninstall pandas
+ls
+./range_sensor.py 
+ls -ltr
+cat range_sensor.dat 
+nano range_sensor.dat 
+./range_sensor.py 
+nano range_sensor.dat 
+./range_sensor.py 
+nano range_sensor.dat 
+./range_sensor.py 
+nano range_sensor.dat 
+./range_sensor.py 
+nano range_sensor.dat 
+tail -f /var/log/rangesensor.log 
+nano range_sensor.dat 
+exit
