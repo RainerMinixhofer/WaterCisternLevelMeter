@@ -336,3 +336,226 @@ nano range_sensor.dat
 tail -f /var/log/rangesensor.log 
 nano range_sensor.dat 
 exit
+sudo apt install python3-csv
+python3
+ls
+./range_sensor.py 
+sudo cron -e
+sudo crontab -e
+ls /etc/crontab 
+nano /etc/crontab
+crontab -e
+ps aux | grep -i python
+ls
+cat range_sensor.dat 
+./range_sensor.py 
+ps aux | grep -i python
+ls -al
+sudo nano /etc/systemd/system/rangesensor.service
+sudo systemctl daemon-reload
+sudo systemctl enable pyserver
+sudo systemctl enable rangesensor
+tail -f /var/log/syslog
+sudo tail -f /var/log/syslog
+ps aux | grep -i python
+sudo systemctl status rangesensor
+sudo systemctl start rangesensor
+sudo tail -f /var/log/syslog
+ls
+sudo tail -f /var/log/syslog
+ls -ltr
+ps aux | grep -i python
+sudo systemctl stop rangesensor
+sudo systemctl status rangesensor
+sudo systemctl start rangesensor
+sudo systemctl status rangesensor
+sudo tail -f /var/log/syslog
+ls -tlr
+cat range_sensor.dat
+sudo systemctl status rangesensor
+cat range_sensor.dat
+timedatectl
+cat range_sensor.dat
+tail -f /var/log/rangesensor.log 
+sudo systemctl stop rangesensor
+sudo systemctl start rangesensor
+sudo systemctl status rangesensor
+tail -f /var/log/rangesensor.log 
+cat /var/log/rangesensor.log 
+sudo systemctl stop rangesensor
+ps aux | grep -i python3
+sudo systemctl start rangesensor
+cat /var/log/rangesensor.log 
+sudo systemctl stop rangesensor
+sudo systemctl status rangesensor
+ls -ltr
+cat range_sensor.dat 
+sudo systemctl start rangesensor
+cat range_sensor.dat 
+sudo systemctl stop rangesensor
+sudo systemctl start rangesensor
+cat range_sensor.dat 
+sudo systemctl stop rangesensor
+sudo systemctl start rangesensor
+cat range_sensor.dat 
+sudo systemctl stop rangesensor
+./range_sensor.py 
+kill -9 %1
+ps aux | grep -i python3
+./range_sensor.py 
+kill -9 %1
+jobs
+cat /var/log/rangesensor.log 
+./range_sensor.py 
+kill -9 %1
+ps aux
+sudo systemctl start rangesensor
+sudo systemctl status rangesensor
+sudo systemctl stop rangesensor
+sudo systemctl status rangesensor
+./range_sensor.py 
+bg
+tail -f /var/log/rangesensor.log 
+jobs
+kill -9 %1
+jobs
+tail -f /var/log/rangesensor.log 
+./range_sensor.py 
+cat /var/log/syslog
+sudo cat /var/log/syslog
+cd /var/log
+ls -ltr
+cat rangesensor.log 
+./range_sensor.py 
+cd
+./range_sensor.py 
+./range_sensor.py
+python3
+./range_sensor.py
+sudo systemctl start rangesensor
+sudo systemctl enable rangesensor
+sudo systemctl status rangesensor
+ls -ltr
+tail -f /var/log/rangesensor.log 
+cat range_sensor.dat 
+tail -f /var/log/rangesensor.log 
+git add /etc/systemd/system/rangesensor.service 
+pwd
+ls
+git commit -a -m "Completely reworked range_sensor.py script to be run as daemon. Included local datalog file and internal datastorage for future outlier prediction. Added maximum bound for rate of water falling from pump output rate. Added optional possibility to output logging info to stdout."
+git push
+tail -f /var/log/rangesensor.log 
+sudo tail -f /var/log/syslog
+sudo systemctl stop rangesensor
+sudo systemctl start rangesensor
+sudo systemctl status rangesensor
+tail -f /var/log/rangesensor.log 
+sudo tail -f /var/log/syslog
+exit
+ls
+exit
+sudo systemctl restart rangesensor.service 
+sudo -H pip3 install fbprophet
+free
+free --help
+free --giga
+free --mega
+sudo -s
+ls
+cat range_sensor.dat 
+sudo -H pip3 install statsmodels
+sudo get installwget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-armv7l.sh
+wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-armv7l.sh
+python --version
+python3 --version
+sudo apt-get update
+cat /etc/os-release
+sudo apt-cache search python
+cat /etc/os-release
+sudo apt update
+sudo apt dist-upgrade
+cat /sys/firmware/devicetree/base/model
+grep -rl stretch /etc/apt/ | sudo xargs sed -i 's/stretch/buster/g'
+sudo apt update && sudo apt dist-upgrade
+sudo shutdown -r now
+ls -ltr
+cat range_sensor.dat 
+exit
+wget https://github.com/joan2937/pigpio/archive/master.zip
+unzip master.zip
+cd pigpio-master
+make 
+sudo make install
+sudo ./x_pigpio
+cat x_pigpio.py 
+cat ../range_sensor.dat 
+pigpiod -v
+sudo make uninstall
+sudo apt-get update
+cat ../range_sensor.dat 
+sudo apt-get install pigpio python-pigpio python3-pigpio
+ls
+cd ..
+pigpiod -v
+which pigpiod
+/usr/bin/pigpiod -v
+sudo rm -R pigpio-master/
+ls
+rm master.zip 
+ls
+rm Miniconda3-latest-Linux-armv7l.sh 
+ls
+cat range_sensor.dat 
+timedatectl
+cat range_sensor.dat 
+ls
+cp range_sensor.py rangesensor.py
+ls -al
+exit
+ls
+sudo systemctl status rangesensor
+sudo systemctl stop rangesensor
+sudo systemctl disable rangesensor
+sudo systemctl enable pigpiod
+sudo systemctl start pigpiod
+sudo systemctl status pigpiod
+pigs r 18
+sudo pigs r 18
+ps aux | grep -i python
+ps aux | grep -i python3
+ps aux
+sudo systemctl status pigpiod
+ps aux | grep -i pigpiod
+sudo systemctl stop pigpiod
+sudo pigpiod -s 2 -b 200 -f
+ps aux | grep -i pigpiod
+pigs r 18
+ps aux | grep -i pigpiod
+kill -9 2902
+sudo kill -9 2902
+sudo systemctl start pigpiod
+sudo systemctl status pigpiod
+pigs r 18
+ps aux | grep -i pigpiod
+sudo systemctl stop pigpiod
+pigs r 18
+sudo pigpiod
+pigs r 18
+ps aux | grep -i pigpiod
+kill -9 2981
+sudo kill -9 2981
+ps aux | grep -i pigpiod
+sudo pigpiod -l
+pigs r 18
+ps aux | grep -i pigpiod
+sudo kill -9 3009
+sudo pigpiod -n 127.0.0.1
+pigs r 18
+ps aux | grep -i pigpiod
+sudo kill -9 3037
+sudo nano /etc/systemd/system/multi-user.target.wants/pigpiod.service 
+sudo systemctl enable pigpiod
+sudo systemctl start pigpiod
+sudo systemctl status pigpiod
+pigs r 18
+exit

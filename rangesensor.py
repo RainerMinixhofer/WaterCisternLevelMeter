@@ -1,9 +1,11 @@
 #!/usr/bin/python3 -u
 """
 Script for controlling the range sensor to measure the fill level in water cistern
-Is running in an infinite loop controlled via systemd
+Is running in an infinite loop controlled via systemd.
+Was copied from the original range_sensor.py script and rewritten for the
+pigpio library which yields much better timing than the RPi.GPIO library
 
-Created on 30.03.2020
+Created on 10.04.2020
 
 @author: Rainer Minixhofer
 """
@@ -15,7 +17,7 @@ from datetime import datetime
 import logging
 import requests
 import numpy as np
-import RPi.GPIO as GPIO #pylint: disable=E0401
+import pigpio #pylint: disable=E0401
 from gpiozero import CPUTemperature #pylint: disable=E0401
 
 class GracefulKiller:
@@ -47,7 +49,7 @@ class GracefulKiller:
 
 killer = GracefulKiller()
 
-GPIO.setmode(GPIO.BCM)
+pi = pigpio.pi()
 
 Tc = 15 # Temperature for calculation of sound speed
 MEASUREINTERVAL = 3*60 # Measure every three minutes
@@ -72,13 +74,14 @@ logging.basicConfig(level=logging.INFO, \
 	filemode='a', format="%(asctime)s: %(name)s - %(levelname)s - %(message)s")
 
 #Enable next line if you want to see the log in stderr
-#logging.getLogger().addHandler(logging.StreamHandler())
+logging.getLogger().addHandler(logging.StreamHandler())
 
 logging.info("Daemon RangeSensor started.")
 
-GPIO.setup(TRIG, GPIO.OUT)
-GPIO.setup(ECHO, GPIO.IN)
-GPIO.remove_event_detect(ECHO)
+pi.set_mode(TRIG, pigpio.OUTPUT)
+pi.set_mode(ECHO, pigpio.INPUT)
+
+#GPIO.remove_event_detect(ECHO)
 
 # Open datafile for processing
 
@@ -97,22 +100,21 @@ else:
     #Write Header when opened the first time
     f.write("DateTime,Distance,Height,Stored_Water,Fill_Height,CPU_Temp")
 
-def measure(channel):
+def measure(GPIO, level, tick):
     """
     Callback for flank detection at pin ECHO
     """
 
     global pulse_start
     global pulse_end
-    if GPIO.input(channel) == 1:     # steigende Flanke, Startzeit speichern
-        pulse_start = time.time()
+    if level == 1:     # steigende Flanke, Startzeit speichern
+        pulse_start = tick
     else:                         # fallende Flanke, Endezeit speichern
-        pulse_end = time.time()
+        pulse_end = tick
 
-if not STATIC_DETECT:
-    GPIO.add_event_detect(ECHO, GPIO.BOTH, callback=measure)
+pi.callback(ECHO, 2, measure)
 
-GPIO.output(TRIG, False)
+pi.write(TRIG, False)
 logging.info("Distance measurement daemon RangeSensor started. Waiting for sensor to settle")
 time.sleep(2)
 
@@ -121,29 +123,20 @@ while not killer.kill_now:
 
     #set trigger for 10us to high. The ultrasonic signal (8x40kHz bursts)
     #is sent out with the falling flank #of the TRIG output.
-    GPIO.output(TRIG, True)
-    time.sleep(0.00001)
-    GPIO.output(TRIG, False)
+    pi.gpio_trigger(TRIG, 10, 1)
 
     #After the burst is sent the ECHO pin is going from low to high and
     #stays high until the echo of the bursts is detected. Thus the duration
     #between the low/high and the high/low flank is proportional to 2xthe
     #distance sound travels in this time interval
-    #We thus measure the time between the two flanks with either an
-    #interrupt callback (when STATIC_DETECT is False) or looping in a while loop
-    #until the flank high/low occurs (when STATIC_DETECT is True).
-    if STATIC_DETECT:
-        while GPIO.input(ECHO) == 0:
-            pulse_start = time.time()
-
-        while GPIO.input(ECHO) == 1:
-            pulse_end = time.time()
-    else:
-        #Wait a bit longer than maximum allowed time of high signal on ECHO pin.
-        time.sleep(0.040)
+    #We thus measure the time between the two flanks with an
+    #interrupt callback.
+    #Wait a bit longer than maximum allowed time of high signal on ECHO pin.
+    time.sleep(0.040)
 
     #When the pulse duration is equal or longer than 38ms no echo has been detected
-    pulse_duration = pulse_end - pulse_start
+    #The time ticks of pigpio are wrapping around from 4294967295 to 0 thus we take the modulo
+    pulse_duration = 10**-6*((pulse_end - pulse_start) % 4294967295)
 
     #Distance is half of the sound speed times the pulse_duration
     #Take approximation for temperature dependence of sound speed into account
@@ -201,5 +194,5 @@ while not killer.kill_now:
         counter -= 1
 
 f.close()
-GPIO.cleanup()
+pi.stop()
 logging.info("Daemon RangeSensor stopped.")
