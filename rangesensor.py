@@ -74,7 +74,7 @@ logging.basicConfig(level=logging.INFO, \
 	filemode='a', format="%(asctime)s: %(name)s - %(levelname)s - %(message)s")
 
 #Enable next line if you want to see the log in stderr
-logging.getLogger().addHandler(logging.StreamHandler())
+#logging.getLogger().addHandler(logging.StreamHandler())
 
 logging.info("Daemon RangeSensor started.")
 
