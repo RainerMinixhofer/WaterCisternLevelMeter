@@ -559,3 +559,21 @@ sudo systemctl start pigpiod
 sudo systemctl status pigpiod
 pigs r 18
 exit
+ls -ltr
+./rangesensor.py 
+sudo nano /etc/systemd/system/rangesensor.service 
+git add rangesensor.py 
+git commit -a -m "Switched over to pigpio library which should be more accurate in time measurement."
+git push
+sudo systemctl start rangesensor
+sudo systemctl status rangesensor
+sudo systemctl stop rangesensor
+sudo systemctl status rangesensor
+git commit -a -m "Changed script name from range_sensor.py to rangesensor.py. Commented systemlog logging statement."
+git push
+sudo systemctl start rangesensor
+sudo systemctl status rangesensor
+tail -f /var/log/rangesensor.log 
+tail -f /var/log/syslog
+sudo tail -f /var/log/syslog
+exit

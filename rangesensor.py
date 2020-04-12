@@ -87,7 +87,7 @@ pi.set_mode(ECHO, pigpio.INPUT)
 
 workdir = os.path.dirname(os.path.abspath(__file__))
 logging.info("Working directory is %s", workdir)
-datfile = workdir+"/range_sensor.dat"
+datfile = workdir+"/rangesensor.dat"
 
 logging.info('Reading previous data from datafile %s', datfile)
 databuffer = np.genfromtxt(datfile, delimiter=',')
