@@ -53,13 +53,13 @@ pi = pigpio.pi()
 
 Tc = 15 # Temperature for calculation of sound speed
 MEASUREINTERVAL = 3*60 # Measure every three minutes
+#MEASUREINTERVAL = 10 # Measure every three minutes
 TRIG = 10 # GPIO Pin where the TRIG signal is connected
-ECHO = 4 # GPIO PIN where the ECHO signal is connected
+ECHO = 17 # GPIO PIN where the ECHO signal is connected
 HEIGHTISEID = 25608 # ISE ID for Height systemvariable in Homematic
 CPUTEMPISEID = 25611 # ISE ID for CPUTemp systemvariable in Homematic
 WATERISEID = 25609  # ISE ID for Water systemvariable in Homematic
 FILLINGISEID = 25610 # ISE ID for Filling systemvariable in Homematic
-STATIC_DETECT = False # True if ECHO Signal should be detected statically, False if trigger based detection should be used
 QPUMP = 65 # Maximum output rate in l/min of the waterpump. Used to calculate limit of height change per measurement interval
 
 degree_sign = u'\N{DEGREE SIGN}'
@@ -81,24 +81,23 @@ logging.info("Daemon RangeSensor started.")
 pi.set_mode(TRIG, pigpio.OUTPUT)
 pi.set_mode(ECHO, pigpio.INPUT)
 
-#GPIO.remove_event_detect(ECHO)
-
 # Open datafile for processing
 
 workdir = os.path.dirname(os.path.abspath(__file__))
 logging.info("Working directory is %s", workdir)
 datfile = workdir+"/rangesensor.dat"
 
-logging.info('Reading previous data from datafile %s', datfile)
-databuffer = np.genfromtxt(datfile, delimiter=',')
-logging.info('Read %d lines', databuffer.shape[0])
-
 if os.path.isfile(datfile):
     f = open(datfile, "a+", buffering=1)
+    logging.info('Reading previous data from datafile %s', datfile)
+    databuffer = np.genfromtxt(datfile, delimiter=',')
+    logging.info('Read %d lines', databuffer.shape[0])
+
 else:
     f = open(datfile, "w", buffering=1)
     #Write Header when opened the first time
     f.write("DateTime,Distance,Height,Stored_Water,Fill_Height,CPU_Temp")
+    databuffer = np.array([])
 
 def measure(GPIO, level, tick):
     """
