@@ -20,8 +20,7 @@ import argparse
 import requests
 import numpy as np
 import pigpio #pylint: disable=E0401
-import RPi.GPIO as GPIO #pylint: disable=E0401
-import wiringpi
+import wiringpi #pylint: disable=E0401
 from gpiozero import CPUTemperature #pylint: disable=E0401
 
 
@@ -37,6 +36,16 @@ parser.add_argument('--measureinterval',
                     help='Measure interval [seconds] between fill height measurements. \
 			If set to 0 then just one measurement is taken. \
                         (Default 3mins = 3*60 seconds)')
+parser.add_argument('--averaging',
+                    nargs='?',
+                    const=10,
+                    default=10,
+                    type=int,
+                    help='If specified the sensor is measuring <averaging> times. \
+			              The median of the <averaging> number of measurements is \
+                          taken and outliers are skipped which are deviating more \
+                          than 10% from this median. The remaining measurements are \
+                          averaged for the result. (Default 10)')
 # Argument to specify location of ASI SDK Library (default specified in env_filename
 parser.add_argument('--GPIOlib',
                     nargs='?',
@@ -82,6 +91,10 @@ if args.GPIOlib.lower() not in ['wiringpi', 'pigpio']:
     exit()
 else:
     usewiringpi = (args.GPIOlib.lower() == 'wiringpi')
+
+if args.averaging*0.05 > args.measureinterval > 0:
+    logging.error("Total averaging time takes longer than interval between measurements.")
+    exit()
 
 class GracefulKiller:
     """
@@ -131,6 +144,7 @@ CPUTEMPISEID = 25611 # ISE ID for CPUTemp systemvariable in Homematic
 WATERISEID = 25609  # ISE ID for Water systemvariable in Homematic
 FILLINGISEID = 25610 # ISE ID for Filling systemvariable in Homematic
 QPUMP = 65 # Maximum output rate in l/min of the waterpump. Used to calculate limit of height change per measurement interval
+OUTLIERSIGMAFACT = 2 # Consider every measurement outside the interval [median - <OUTLIERSIGMAFACT>*sigma, median + <OUTLIERSIGMAFACT>*sigma] an outlier
 
 degree_sign = u'\N{DEGREE SIGN}'
 
@@ -199,10 +213,12 @@ def measure_flank_time_pigpio(pin, level, tick):
 
     global pulse_start
     global pulse_end
-    if level == 1:     # steigende Flanke, Startzeit speichern
-        pulse_start = tick
-    else:                         # fallende Flanke, Endezeit speichern
-        pulse_end = tick
+
+    if pin == ECHO:
+        if level == 1:     # steigende Flanke, Startzeit speichern
+            pulse_start = tick
+        else:                         # fallende Flanke, Endezeit speichern
+            pulse_end = tick
 
 def measure_flank_time_wiringpi():
     """
@@ -224,7 +240,7 @@ if usewiringpi:
         wiringpi.wiringPiISR(ECHO, wiringpi.GPIO.INT_EDGE_BOTH, \
                              measure_flank_time_wiringpi)
 #        GPIO.add_event_detect(ECHO, GPIO.BOTH, callback=measure_flank_time_wiringpi)
-    wiringpi.digitalWrite(TRIG,0)
+    wiringpi.digitalWrite(TRIG, 0)
 #    GPIO.output(TRIG, False)
 else:
     if not args.staticdetect:
@@ -237,6 +253,7 @@ time.sleep(2)
 
 while not killer.kill_now:
 
+
     #First measure air temperature to get sonic speed temperature dependence
     Tair = measure_temperature(DS18B20ID)
     logging.info("Air Temp: %.2f degC", Tair)
@@ -244,54 +261,69 @@ while not killer.kill_now:
     cpu = CPUTemperature()
     logging.info("CPU Temp: %.2f degC", cpu.temperature)
 
-    #set trigger for 10us to high. The ultrasonic signal (8x40kHz bursts)
-    #is sent out with the falling flank #of the TRIG output.
-    logging.debug("Send Trigger pulse on TRIG pin")
-    if usewiringpi:
-        wiringpi.digitalWrite(TRIG, 1)
-#        GPIO.output(TRIG, True)
-        wiringpi.delayMicroseconds(10)
-#        time.sleep(0.00001) # Not very accurate. Need better solution
-        wiringpi.digitalWrite(TRIG, 0)
-#        GPIO.output(TRIG, False)
-    else:
-        pi.gpio_trigger(TRIG, 10, 1)
+    arr = np.zeros(args.averaging)
 
-    #After the burst is sent the ECHO pin is going from low to high and
-    #stays high until the echo of the bursts is detected. Thus the duration
-    #between the low/high and the high/low flank is proportional to 2xthe
-    #distance sound travels in this time interval
-    #We thus measure the time between the two flanks with either an
-    #interrupt callback (when args.staticdetect is False) or looping in a while loop
-    #until the flank high/low occurs (when args.staticdetect is True).
-    logging.debug("Waiting for response")
-    if args.staticdetect:
-        while usewiringpi and wiringpi.digitalRead(ECHO) == 0 or not usewiringpi and pi.read(ECHO) == 0:
-            pulse_start = time.time()
-        while usewiringpi and wiringpi.digitalRead(ECHO) == 1 or not usewiringpi and pi.read(ECHO) == 1:
-            pulse_end = time.time()
-        #Convert into Microseconds timing
-        pulse_end = (pulse_end - pulse_start)*10**6
-        pulse_start = 0
-    else:
-        #Wait a bit longer than maximum allowed time of high signal on ECHO pin.
+    for idx, _ in np.ndenumerate(arr):
+        #set trigger for 10us to high. The ultrasonic signal (8x40kHz bursts)
+        #is sent out with the falling flank #of the TRIG output.
+        logging.debug("Send Trigger pulse on TRIG pin")
         if usewiringpi:
-#            time.sleep(0.040)
-             wiringpi.delay(40)
+            wiringpi.digitalWrite(TRIG, 1)
+    #        GPIO.output(TRIG, True)
+            wiringpi.delayMicroseconds(10)
+    #        time.sleep(0.00001) # Not very accurate. Need better solution
+            wiringpi.digitalWrite(TRIG, 0)
+    #        GPIO.output(TRIG, False)
         else:
-            time.sleep(0.040)
-    #The time ticks are wrapping around at the max value of an unsigned 32-bit number thus we take the modulo
-    logging.debug("Detected rising edge at time-stamp %d", pulse_start)
-    logging.debug("Detected falling edge at time-stamp %d", pulse_end)
-    pulse_duration = 10**-6*((pulse_end - pulse_start) % int('0b'.ljust(34, '1'),2))
+            pi.gpio_trigger(TRIG, 10, 1)
 
-    logging.debug("ECHO Pulse duration %.1f us", pulse_duration*10**6)
+        #After the burst is sent the ECHO pin is going from low to high and
+        #stays high until the echo of the bursts is detected. Thus the duration
+        #between the low/high and the high/low flank is proportional to 2xthe
+        #distance sound travels in this time interval
+        #We thus measure the time between the two flanks with either an
+        #interrupt callback (when args.staticdetect is False) or looping in a while loop
+        #until the flank high/low occurs (when args.staticdetect is True).
+        logging.debug("Iteration %d: Waiting for response", idx[0]+1)
+        if args.staticdetect:
+            while usewiringpi and wiringpi.digitalRead(ECHO) == 0 or not usewiringpi and pi.read(ECHO) == 0:
+                pulse_start = time.time()
+            while usewiringpi and wiringpi.digitalRead(ECHO) == 1 or not usewiringpi and pi.read(ECHO) == 1:
+                pulse_end = time.time()
+            #Convert into Microseconds timing
+            pulse_end = (pulse_end - pulse_start)*10**6
+            pulse_start = 0
+        else:
+            #Wait a bit longer than maximum allowed time of high signal on ECHO pin.
+            if usewiringpi:
+                wiringpi.delay(40)
+            else:
+                time.sleep(0.040)
+        #The time ticks are wrapping around at the max value of an unsigned 32-bit number thus we take the modulo
+        logging.debug("Detected rising edge at time-stamp %d", pulse_start)
+        logging.debug("Detected falling edge at time-stamp %d", pulse_end)
+        pulse_duration = ((pulse_end - pulse_start) % int('0b'.ljust(34, '1'), 2))
+        arr[idx] = pulse_duration
+        logging.debug("ECHO Pulse duration %.1f us", pulse_duration)
+
+    # Drop all measurements which deviate more than 3xStandardDeviation from Median value
+    print(arr)
+    pd_median = np.median(arr)
+    pd_stddev = OUTLIERSIGMAFACT * np.std(arr)
+    selector = ((pd_median - pd_stddev) < arr) & (arr < (pd_median + pd_stddev))
+    nroutliers = np.count_nonzero(np.invert(selector))
+    if nroutliers > 0:
+        logging.info("We have %d outlier(s) which have been dropped from averaging.", nroutliers)
+    arr = arr[selector]
+    pulse_duration = np.mean(arr)
+
+    logging.debug("ECHO Pulse duration %.1f us", pulse_duration)
 
     #When the pulse duration is equal or longer than 38ms no echo has been detected
 
     #Distance is half of the sound speed times the pulse_duration
     #Take approximation for temperature dependence of sound speed into account
-    distance = pulse_duration * (33140 + 60 * Tair) /2
+    distance = pulse_duration *10**-6 * (33140 + 60 * Tair) /2
 
     distance = round(distance, 2)
     height = CISTERNHEIGHT - distance # in cm
