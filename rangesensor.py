@@ -38,14 +38,14 @@ parser.add_argument('--measureinterval',
                         (Default 3mins = 3*60 seconds)')
 parser.add_argument('--averaging',
                     nargs='?',
-                    const=10,
-                    default=10,
+                    const=50,
+                    default=50,
                     type=int,
                     help='If specified the sensor is measuring <averaging> times. \
 			              The median of the <averaging> number of measurements is \
                           taken and outliers are skipped which are deviating more \
-                          than 10% from this median. The remaining measurements are \
-                          averaged for the result. (Default 10)')
+                          than 2*sigma from this median. The remaining measurements are \
+                          averaged for the result. (Default 50)')
 # Argument to specify location of ASI SDK Library (default specified in env_filename
 parser.add_argument('--GPIOlib',
                     nargs='?',
