@@ -131,7 +131,7 @@ if usewiringpi:
 else:
     pi = pigpio.pi()
 
-Tair = 15 # Temperature for calculation of sound speed
+Tair = 15 # Default Temperature for calculation of sound speed
 DS18B20ID = "28-0300a279f812" # ID of external temperature sensor
 MEASUREINTERVAL = args.measureinterval # Measure every three minutes
 #MEASUREINTERVAL = 10 # Measure every three minutes
@@ -235,6 +235,22 @@ def measure_flank_time_wiringpi():
         pulse_end = wiringpi.micros()
     return True
 
+def speed_of_sound(temp):
+    """
+
+    Parameters
+    ----------
+    temp : float
+        Temperature of air
+
+    Returns
+    -------
+    float
+        Speed of sound in air in m/s
+
+    """
+    return 20.0456*np.sqrt(273.15 + temp) # in m/s
+
 if usewiringpi:
     if not args.staticdetect:
         wiringpi.wiringPiISR(ECHO, wiringpi.GPIO.INT_EDGE_BOTH, \
@@ -321,9 +337,9 @@ while not killer.kill_now:
 
     #When the pulse duration is equal or longer than 38ms no echo has been detected
 
-    #Distance is half of the sound speed times the pulse_duration
-    #Take approximation for temperature dependence of sound speed into account
-    distance = pulse_duration *10**-6 * (33140 + 60 * Tair) /2
+    #Distance is half of the sound speed (in m/s) times the pulse_duration (in us)
+    #Take temperature dependence of sound speed into account
+    distance = pulse_duration / 2 *10**-4 * speed_of_sound(Tair)
 
     distance = round(distance, 2)
     height = CISTERNHEIGHT - distance # in cm
