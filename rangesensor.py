@@ -153,7 +153,7 @@ degree_sign = u'\N{DEGREE SIGN}'
 
 CISTERNAREA = 109270 # Base area of cistern in cm^2
 CISTERNHEIGHT = 239 #estimated distance between sensor and cistern floor in cm needs to be measured
-WATERMAXHEIGHT = 171.5 # Maximum water height in cistern in cm
+WATERMAXHEIGHT = 173.5 # Maximum water height in cistern in cm. Calibrated to 100% when cistern was full
 WATERFALLRATE = QPUMP*1000/CISTERNAREA # Maximum rate of sinking waterlevel change in cm/min when pump is running at max output rate
 
 pulse_start = None
