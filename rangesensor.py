@@ -45,7 +45,7 @@ parser.add_argument('--averaging',
                     help='If specified the sensor is measuring <averaging> times. \
 			              The median of the <averaging> number of measurements is \
                           taken and outliers are skipped which are deviating more \
-                          than 2*sigma from this median. The remaining measurements are \
+                          than 6*sigma from this median. The remaining measurements are \
                           averaged for the result. (Default 50)')
 # Argument to specify location of ASI SDK Library (default specified in env_filename
 parser.add_argument('--GPIOlib',
@@ -132,12 +132,14 @@ if usewiringpi:
 else:
     pi = pigpio.pi()
 
+#URL for saving measured parameters into
+URL = 'http://homematic.minix.local/config/xmlapi/statechange.cgi'
+
 Tair = 15 # Default Temperature for calculation of sound speed
 pair = 101325 # Default air pressure for calculation of sound speed
 hair = 0.5 # Default relative air humidity for calculation of sound speed
 DS18B20ID = "28-0300a279f812" # ID of external temperature sensor
 MEASUREINTERVAL = args.measureinterval # Measure every three minutes
-#MEASUREINTERVAL = 10 # Measure every three minutes
 TRIG = 10 # GPIO Pin where the TRIG signal is connected
 ECHO = 17 # GPIO PIN where the ECHO signal is connected
 TEMP = 4 # GPIO PIN where the 1-wire temperature sensor is connected
@@ -147,7 +149,7 @@ CPUTEMPISEID = 25611 # ISE ID for CPUTemp systemvariable in Homematic
 WATERISEID = 25609  # ISE ID for Water systemvariable in Homematic
 FILLINGISEID = 25610 # ISE ID for Filling systemvariable in Homematic
 QPUMP = 65 # Maximum output rate in l/min of the waterpump. Used to calculate limit of height change per measurement interval
-OUTLIERSIGMAFACT = 2 # Consider every measurement outside the interval [median - <OUTLIERSIGMAFACT>*sigma, median + <OUTLIERSIGMAFACT>*sigma] an outlier
+OUTLIERSIGMAFACT = 6 # Consider every measurement outside the interval [median - <OUTLIERSIGMAFACT>*sigma, median + <OUTLIERSIGMAFACT>*sigma] an outlier
 
 degree_sign = u'\N{DEGREE SIGN}'
 
@@ -273,7 +275,7 @@ while not killer.kill_now:
         if usewiringpi:
             wiringpi.digitalWrite(TRIG, 1)
     #        GPIO.output(TRIG, True)
-            wiringpi.delayMicroseconds(10)
+            wiringpi.delayMicroseconds(20) # According to the web sensor has problems with 10us Trigger pulse width, 20us is more stable
     #        time.sleep(0.00001) # Not very accurate. Need better solution
             wiringpi.digitalWrite(TRIG, 0)
     #        GPIO.output(TRIG, False)
@@ -309,7 +311,7 @@ while not killer.kill_now:
         arr[idx] = pulse_duration
         logging.debug("ECHO Pulse duration %.1f us", pulse_duration)
 
-    # Drop all measurements which deviate more than 3xStandardDeviation from Median value
+    # Drop all measurements which deviate more than <OUTLIERSIGMAFACT>xStandardDeviation from Median value
     print(arr)
     pd_median = np.median(arr)
     pd_stddev = OUTLIERSIGMAFACT * np.std(arr)
@@ -334,9 +336,6 @@ while not killer.kill_now:
     filling = height/WATERMAXHEIGHT*100 # in %
 
     date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S") # current date and time
-
-    URL = 'http://homematic.minixint.at/config/xmlapi/statechange.cgi'
-
 
     # Outlier Check
 
