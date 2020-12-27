@@ -1,3 +1,0 @@
-#Start/Stop/Reload daemon for measuring fill height:
-sudo systemctl reload rangesensor
-
