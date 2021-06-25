@@ -140,8 +140,8 @@ pair = 101325 # Default air pressure for calculation of sound speed
 hair = 0.5 # Default relative air humidity for calculation of sound speed
 DS18B20ID = "28-0300a279f812" # ID of external temperature sensor
 MEASUREINTERVAL = args.measureinterval # Measure every three minutes
-TRIG = 10 # GPIO Pin where the TRIG signal is connected
-ECHO = 17 # GPIO PIN where the ECHO signal is connected
+TRIG = 17 # GPIO Pin where the TRIG signal is connected
+ECHO = 27 # GPIO PIN where the ECHO signal is connected
 TEMP = 4 # GPIO PIN where the 1-wire temperature sensor is connected
 HEIGHTISEID = 25608 # ISE ID for Height systemvariable in Homematic
 AIRTEMPISEID = 25612 # ISE ID for air temperature measurement in Homematic
@@ -205,11 +205,18 @@ def measure_temperature(devid):
         Temperature in degrees Celsius.
 
     """
-    devf = open("/sys/bus/w1/devices/"+devid+"/w1_slave", "r")
-    devcont = devf.read()
-    tstring = re.search(r"t=(\d+)\n", devcont).group(1)
-    devf.close()
-    return int(tstring)/1000
+    try:
+        devf = open("/sys/bus/w1/devices/"+devid+"/w1_slave", "r")
+        devcont = devf.read()
+        tstring = re.search(r"t=(\d+)\n", devcont).group(1)
+        devf.close()
+    except (IOError, ValueError, EOFError) as e:
+        print(e)
+        tstring = '20000'
+    except:
+        print('Unknown Error')
+    finally:
+        return int(tstring)/1000
 
 def measure_flank_time_pigpio(pin, level, tick):
     """
