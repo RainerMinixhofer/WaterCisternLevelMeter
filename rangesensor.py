@@ -14,6 +14,7 @@ import os
 import re
 import signal
 import time
+import gzip
 from datetime import datetime
 import logging
 import argparse
@@ -135,6 +136,7 @@ else:
 #URL for saving measured parameters into
 URL = 'http://homematic.minix.local/config/xmlapi/statechange.cgi'
 
+fdatetime = "%Y-%m-%d %H:%M:%S"
 Tair = 15 # Default Temperature for calculation of sound speed
 pair = 101325 # Default air pressure for calculation of sound speed
 hair = 0.5 # Default relative air humidity for calculation of sound speed
@@ -179,16 +181,29 @@ workdir = os.path.dirname(os.path.abspath(__file__))
 logging.debug("Working directory is %s", workdir)
 datfile = workdir+"/rangesensor.dat"
 
+# Check if first datapoint in file is in previous month. If this is the case
+# Archive the datafile and remove datafile to generate new one
+if os.path.isfile(datfile):
+    with open(datfile) as f:
+        f.readline()
+        firstdatetime = datetime.datetime.strptime(f.readline().split(',')[0], fdatetime)
+    if firstdatetime.date.month < datetime.now().date.month:
+        gzfile = os.path.splitext(datfile)
+        gzfile = gzfile[0]+str(datetime.datetime.now().date())+gzfile[1]+'.gz'
+        with open(datfile, 'rb') as f_in, gzip.open(gzfile, 'wb') as f_out:
+            f_out.writelines(f_in)
+        os.remove(datfile)
+#Read in datafile if exists otherwise open new one
 if os.path.isfile(datfile):
     f = open(datfile, "a+", buffering=1)
     logging.info('Reading previous data from datafile %s', datfile)
-    databuffer = np.genfromtxt(datfile, delimiter=',')
+    databuffer = np.genfromtxt(datfile, delimiter=',', invalid_raise=False)
     logging.info('Read %d lines', databuffer.shape[0])
 
 else:
     f = open(datfile, "w", buffering=1)
     #Write Header when opened the first time
-    f.write("DateTime,Distance,Height,Stored_Water,Fill_Height,CPU_Temp,Air_Temp")
+    f.write("DateTime,Distance,Height,Stored_Water,Fill_Height,CPU_Temp,Air_Temp\n")
     databuffer = np.array([])
 
 def measure_temperature(devid):
@@ -206,10 +221,9 @@ def measure_temperature(devid):
 
     """
     try:
-        devf = open("/sys/bus/w1/devices/"+devid+"/w1_slave", "r")
-        devcont = devf.read()
-        tstring = re.search(r"t=(\d+)\n", devcont).group(1)
-        devf.close()
+        with open("/sys/bus/w1/devices/"+devid+"/w1_slave", "r") as devf:
+            devcont = devf.read()
+            tstring = re.search(r"t=(\d+)\n", devcont).group(1)
     except (IOError, ValueError, EOFError) as e:
         print(e)
         tstring = '20000'
@@ -342,7 +356,7 @@ while not killer.kill_now:
     water = CISTERNAREA*height/1000 # in Liters
     filling = height/WATERMAXHEIGHT*100 # in %
 
-    date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S") # current date and time
+    date_time = datetime.now().strftime(fdatetime) # current date and time
 
     # Outlier Check
 
