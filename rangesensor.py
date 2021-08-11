@@ -186,8 +186,9 @@ datfile = workdir+"/rangesensor.dat"
 if os.path.isfile(datfile):
     with open(datfile) as f:
         f.readline()
-        firstdatetime = datetime.datetime.strptime(f.readline().split(',')[0], fdatetime)
-    if firstdatetime.date.month < datetime.now().date.month:
+        firstdatetime = datetime.strptime(f.readline().split(',')[0], fdatetime)
+    curdatetime = datetime.now()
+    if firstdatetime.month < curdatetime.month:
         gzfile = os.path.splitext(datfile)
         gzfile = gzfile[0]+str(datetime.datetime.now().date())+gzfile[1]+'.gz'
         with open(datfile, 'rb') as f_in, gzip.open(gzfile, 'wb') as f_out:
