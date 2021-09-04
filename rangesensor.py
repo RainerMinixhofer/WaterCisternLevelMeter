@@ -150,6 +150,7 @@ AIRTEMPISEID = 25612 # ISE ID for air temperature measurement in Homematic
 CPUTEMPISEID = 25611 # ISE ID for CPUTemp systemvariable in Homematic
 WATERISEID = 25609  # ISE ID for Water systemvariable in Homematic
 FILLINGISEID = 25610 # ISE ID for Filling systemvariable in Homematic
+LASTFILLINGISEID = 26000 #ISE ID for LastFilling systemvariable in Homematic
 QPUMP = 65 # Maximum output rate in l/min of the waterpump. Used to calculate limit of height change per measurement interval
 OUTLIERSIGMAFACT = 6 # Consider every measurement outside the interval [median - <OUTLIERSIGMAFACT>*sigma, median + <OUTLIERSIGMAFACT>*sigma] an outlier
 
@@ -190,19 +191,19 @@ if os.path.isfile(datfile):
     curdatetime = datetime.now()
     if firstdatetime.month < curdatetime.month:
         gzfile = os.path.splitext(datfile)
-        gzfile = gzfile[0]+str(datetime.datetime.now().date())+gzfile[1]+'.gz'
+        gzfile = gzfile[0]+str(datetime.now().date())+gzfile[1]+'.gz'
         with open(datfile, 'rb') as f_in, gzip.open(gzfile, 'wb') as f_out:
             f_out.writelines(f_in)
         os.remove(datfile)
 #Read in datafile if exists otherwise open new one
 if os.path.isfile(datfile):
-    f = open(datfile, "a+", buffering=1)
+    f = open(datfile, "a+", buffering=1) #pylint: disable=R1732
     logging.info('Reading previous data from datafile %s', datfile)
-    databuffer = np.genfromtxt(datfile, delimiter=',', invalid_raise=False)
+    databuffer = np.genfromtxt(datfile, delimiter=',', invalid_raise=False, skip_header=1)
     logging.info('Read %d lines', databuffer.shape[0])
 
 else:
-    f = open(datfile, "w", buffering=1)
+    f = open(datfile, "w", buffering=1) #pylint: disable=R1732
     #Write Header when opened the first time
     f.write("DateTime,Distance,Height,Stored_Water,Fill_Height,CPU_Temp,Air_Temp\n")
     databuffer = np.array([])
@@ -228,10 +229,9 @@ def measure_temperature(devid):
     except (IOError, ValueError, EOFError) as e:
         print(e)
         tstring = '20000'
-    except:
+    except: #pylint: disable=W0702
         print('Unknown Error')
-    finally:
-        return int(tstring)/1000
+    return int(tstring)/1000
 
 def measure_flank_time_pigpio(pin, level, tick):
     """
@@ -276,7 +276,7 @@ else:
 
 logging.info("Distance measurement daemon RangeSensor started. Waiting for sensor to settle")
 time.sleep(2)
-
+last_date_time = datetime.now() # store date and time for interval comparison
 
 while not killer.kill_now:
 
@@ -348,6 +348,9 @@ while not killer.kill_now:
 
     #When the pulse duration is equal or longer than 38ms no echo has been detected
 
+    # Get current date and time
+    date_time = datetime.now() # current date and time
+
     #Distance is half of the sound speed (in m/s) times the pulse_duration (in us)
     #Take temperature dependence of sound speed into account
     distance = pulse_duration / 2 *10**-4 * soundspeed.speed_of_sound(Tair, pair, hair)
@@ -356,8 +359,6 @@ while not killer.kill_now:
     height = CISTERNHEIGHT - distance # in cm
     water = CISTERNAREA*height/1000 # in Liters
     filling = height/WATERMAXHEIGHT*100 # in %
-
-    date_time = datetime.now().strftime(fdatetime) # current date and time
 
     # Outlier Check
 
@@ -368,6 +369,14 @@ while not killer.kill_now:
             result = requests.get(URL + '?ise_id=%d,%d,%d' % (HEIGHTISEID, WATERISEID, FILLINGISEID) + \
                                         '&new_value=%.1f,%d,%.2f' % (height, water, filling))
             logging.debug(result.url)
+            #check if a new day has started. If so store filling data into last filling system variable
+            if date_time.day != last_date_time.day:
+                logging.info("New day, storing last Fill Height.")
+                result = requests.get(URL + '?ise_id=%d' % (LASTFILLINGISEID) + \
+                                      '&new_value=%.2f' % (filling))
+                logging.debug(result.url)
+                last_date_time = date_time
+
         except requests.exceptions.RequestException as err:
             logging.error("Error occured, trying again later: ", exc_info=err)
 
@@ -381,9 +390,7 @@ while not killer.kill_now:
         logging.info("Pulse Duration: %6.2f us", pulse_duration*10**6)
         logging.info("Distance: %6.2f cm", distance)
 
-    #np.append(databuffer, [[date_time, distance, height, water, filling]])
-
-    f.write("%s,%6.2f,%6.2f,%5d,%.2f" % (date_time, distance, height, water, filling))
+    f.write("%s,%6.2f,%6.2f,%5d,%.2f" % (date_time.strftime(fdatetime), distance, height, water, filling))
     f.write(",%.2f,%.2f\n" % (cpu.temperature, Tair))
 
     try:
