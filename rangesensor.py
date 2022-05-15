@@ -363,7 +363,7 @@ while not killer.kill_now:
     # Outlier Check
 
     #write datum into homematic
-    if 0 <= filling < 110:
+    if 0 <= filling <= 100:
 
         try:
             result = requests.get(URL + '?ise_id=%d,%d,%d' % (HEIGHTISEID, WATERISEID, FILLINGISEID) + \
@@ -386,7 +386,7 @@ while not killer.kill_now:
         logging.info("Fill Height: %.2f %%", filling)
 
     else:
-        logging.error("Measured fill height out of bounds (0%%<%.2f<110%%)", filling)
+        logging.error("Measured fill height out of bounds (0%%<%.2f<100%%)", filling)
         logging.info("Pulse Duration: %6.2f us", pulse_duration*10**6)
         logging.info("Distance: %6.2f cm", distance)
 
